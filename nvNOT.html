@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>واجهة تقديم الانشغالات</title>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <!-- إضافة مكتبات Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fustat:wght@200..800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            direction: rtl;
+            background: url('a1.png') no-repeat center center fixed;
+            background-size: cover;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        header {
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 5px;
+            width: 90%;
+            text-align: center;
+            position: fixed;
+            top: 0;
+            left: 30;
+            font-family: 'fustat', sans-serif;
+        }
+        header h1 { font-size: 16px; }
+        header h2 { font-size: 15px; }
+        header h3 { font-size: 14px; }
+        header p { font-size: 13px; margin: 5px 0; }
+        /* تنسيق شريط الأخبار */
+        #newsTicker {
+            background-color: #ffcc00;
+            color: #000;
+            padding: 5px;
+            width: 90%;
+            position: fixed;
+            top: 70px; /* أسفل الهيدر */
+            left: 30;
+            font-size: 14px;
+            overflow: hidden;
+            white-space: nowrap;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        #newsTicker a {
+            color: #000;
+            text-decoration: none;
+            margin: 0 20px;
+        }
+        #newsTicker a:hover { text-decoration: underline; }
+        @media (max-width: 768px) {
+            header { padding: 3px; }
+            header h1 { font-size: 16px; }
+            header h2 { font-size: 15px; }
+            header h3 { font-size: 14px; }
+            header p { font-size: 12px; }
+            #newsTicker { top: 60px; font-size: 12px; }
+        }
+        .form-container {
+            background: rgba(255, 255, 255, 0.85);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            width: 70%;
+            max-width: 250px;
+            margin-top: 120px; /* لإفساح المجال لشريط الأخبار */
+        }
+        input, textarea, select {
+            width: 90%;
+            padding: 6px;
+            margin-bottom: 12px;
+            border: 1px solid #f09041;
+            border-radius: 11px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            font-size: 12px;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+        button {
+            background-color: #0ea18e;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            width: 100%;
+        }
+        button:hover { background-color: #088e78; }
+        .success-message {
+            display: none;
+            color: green;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>الجمـهورية الجزائـرية الديمقـراطية الشعـبية</h1>
+        <h2>وزارة التجارة الداخلية وضبط السوق الوطنية</h2>
+        <h3>المديرية العامة للرقابة الاقتصادية وقمع الغش</h3>
+        <p>مرحبًا، قدم انشغالك</p>
+    </header>
+
+    <!-- شريط الأخبار المتحرك -->
+    <div id="newsTicker">
+        <marquee direction="right" scrollamount="5" onmouseover="this.stop();" onmouseout="this.start();">
+            <span id="tickerContent">جارٍ التحميل...</span>
+        </marquee>
+    </div>
+
+    <div class="form-container">
+        <form id="complaintForm">
+            <label for="fullName">الاسم واللقب:</label>
+            <input type="text" id="fullName" name="fullName" placeholder="أدخل اسمك ولقبك" 
+                   pattern="[ء-ي\s]+" 
+                   title="يرجى إدخال حروف عربية فقط" 
+                   required>
+
+            <label for="phone">رقم الهاتف:</label>
+            <input type="tel" id="phone" name="phone" placeholder="0XXXXXXXXXX" 
+                   pattern="0[5-7][0-9]{8}" 
+                   title="يرجى إدخال رقم هاتف جزائري صحيح (10 أرقام تبدأ بـ 05، 06، أو 07)" 
+                   required>
+
+            <label for="email">البريد الإلكتروني:</label>
+            <input type="email" id="email" name="email" placeholder="أدخل بريدك الإلكتروني" 
+                   pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" 
+                   title="يرجى إدخال بريد إلكتروني صحيح (مثل example@domain.com)" 
+                   required>
+            
+            <label for="state">الولاية:</label>
+            <select id="state" name="state" required>
+                <option value="">اختر ولايتك</option>
+                <option value="أدرار">أدرار</option>
+                <option value="الشلف">الشلف</option>
+                <option value="الأغواط">الأغواط</option>
+                <option value="أم البواقي">أم البواقي</option>
+                <option value="باتنة">باتنة</option>
+                <option value="بجاية">بجاية</option>
+                <option value="بسكرة">بسكرة</option>
+                <option value="بشار">بشار</option>
+                <option value="البليدة">البليدة</option>
+                <option value="البويرة">البويرة</option>
+                <option value="تمنراست">تمنراست</option>
+                <option value="تبسة">تبسة</option>
+                <option value="تلمسان">تلمسان</option>
+                <option value="تيارت">تيارت</option>
+                <option value="تيزي وزو">تيزي وزو</option>
+                <option value="الجزائر">الجزائر</option>
+                <option value="الجلفة">الجلفة</option>
+                <option value="جيجل">جيجل</option>
+                <option value="سطيف">سطيف</option>
+                <option value="سعيدة">سعيدة</option>
+                <option value="سكيكدة">سكيكدة</option>
+                <option value="سيدي بلعباس">سيدي بلعباس</option>
+                <option value="عنابة">عنابة</option>
+                <option value="قالمة">قالمة</option>
+                <option value="قسنطينة">قسنطينة</option>
+                <option value="المدية">المدية</option>
+                <option value="مستغانم">مستغانم</option>
+                <option value="المسيلة">المسيلة</option>
+                <option value="معسكر">معسكر</option>
+                <option value="ورقلة">ورقلة</option>
+                <option value="وهران">وهران</option>
+                <option value="البيض">البيض</option>
+                <option value="إليزي">إليزي</option>
+                <option value="برج بوعريريج">برج بوعريريج</option>
+                <option value="بومرداس">بومرداس</option>
+                <option value="الطارف">الطارف</option>
+                <option value="تندوف">تندوف</option>
+                <option value="تيسمسيلت">تيسمسيلت</option>
+                <option value="الوادي">الوادي</option>
+                <option value="خنشلة">خنشلة</option>
+                <option value="سوق أهراس">سوق أهراس</option>
+                <option value="تيبازة">تيبازة</option>
+                <option value="ميلة">ميلة</option>
+                <option value="عين الدفلى">عين الدفلى</option>
+                <option value="النعامة">النعامة</option>
+                <option value="عين تموشنت">عين تموشنت</option>
+                <option value="غرداية">غرداية</option>
+                <option value="غليزان">غليزان</option>
+                <option value="تيميمون">تيميمون</option>
+                <option value="برج باجي مختار">برج باجي مختار</option>
+                <option value="أولاد جلال">أولاد جلال</option>
+                <option value="بني عباس">بني عباس</option>
+                <option value="إن صالح">إن صالح</option>
+                <option value="إن قزام">إن قزام</option>
+                <option value="تقرت">تقرت</option>
+                <option value="جانت">جانت</option>
+                <option value="المغير">المغير</option>
+                <option value="المنيعة">المنيعة</option>
+            </select>
+    
+            <label for="municipality">البلدية:</label>
+            <input type="text" id="municipality" name="municipality" placeholder="أدخل بلديتك" 
+                   pattern="[ء-ي\s]+" 
+                   title="يرجى إدخال حروف عربية فقط" 
+                   required>
+
+            <label for="description">وصف الانشغال:</label>
+            <textarea id="description" name="description" placeholder="اكتب وصفًا دقيقًا للانشغال" rows="5" required></textarea>
+            
+            <button type="submit">إرسال</button>
+        </form>
+        <p class="success-message" id="successMessage">تم الإرسال بنجاح، ستنظر مصالح التجارة في انشغالك</p>
+    </div>
+
+    <script>
+        // إعداد Firebase (استبدل هذا بالكود الذي حصلت عليه من Firebase)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAM-op2MBQjm00Nwo-eD0wxf8V1sdG5X8s",
+            authDomain: "inshighalmcirmn-3037f.firebaseapp.com",
+            projectId: "inshighalmcirmn-3037f",
+            storageBucket: "inshighalmcirmn-3037f.firebasestorage.app",
+            messagingSenderId: "109645536978",
+            appId: "G-V9M0MP9N0M"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        emailjs.init("nVPGHqM9IKHQ9ObVJ");
+
+        const stateEmails = {
+            "أدرار": "",
+            "الشلف": "dwcchlef02@gmail.com",
+            "الأغواط": "",
+            "أم البواقي": "dcoumelbouaghi@gmail.com",
+            "باتنة": "dcbatna@gmail.com",
+            "بجاية": "dcwbjaia@gmail.com",
+            "بسكرة": "dcbiskra@gmail.com",
+            "بشار": "",
+            "البليدة": "dcwblida@gmail.com",
+            "البويرة": "dcwbouira@gmail.com",
+            "تمنراست": "",
+            "تبسة": "dctebessa@gmail.com",
+            "تلمسان": "",
+            "تيارت": "dwc.tiaret@gmail.com",
+            "تيزي وزو": "dcwto12@yahoo.fr",
+            "الجزائر": "dgcerf@gmail.com",
+            "الجلفة": "dcwdjelfa@gmail.com",
+            "جيجل": "dcwjijel18@gmail.com",
+            "سطيف": "dwcsetif@gmail.com",
+            "سعيدة": "dwc.saida@gmail.com",
+            "سكيكدة": "dcwskikda21@gmail.com",
+            "سيدي بلعباس": "",
+            "عنابة": "dcwannaba.dz@gmail.com",
+            "قالمة": "dcwguelma@gmail.com",
+            "قسنطينة": "dcconstantine25@gmail.com",
+            "المدية": "directioncommerce_w26@yahoo.fr",
+            "مستغانم": "",
+            "المسيلة": "dcommercemsila@gmail.com",
+            "معسكر": "mascara29dcw@gmail.com",
+            "ورقلة": "",
+            "وهران": "dcworan6@gmail.com",
+            "البيض": "",
+            "إليزي": "",
+            "برج بوعريريج": "dcommercebba@gmail.com",
+            "بومرداس": "",
+            "الطارف": "dcweltarf36@gmail.com",
+            "تندوف": "",
+            "تيسمسيلت": "dwc.tissemsilt@gmail.com",
+            "الوادي": "",
+            "خنشلة": "dckhenchela@gmail.com",
+            "سوق أهراس": "dir.com.41@gmail.com",
+            "تيبازة": "",
+            "ميلة": "com.mila43@gmail.com",
+            "عين الدفلى": "dcw_ad@yahoo.fr",
+            "النعامة": "",
+            "عين تموشنت": "",
+            "غرداية": "",
+            "غليزان": "dwc.relizaine@gmail.com",
+            "تيميمون": "",
+            "برج باجي مختار": "",
+            "أولاد جلال": "dcw.ouleddjellal@gmail.com",
+            "بني عباس": "",
+            "إن صالح": "",
+            "إن قزام": "",
+            "تقرت": "",
+            "جانت": "",
+            "المغير": "",
+            "المنيعة": ""
+        };
+
+        // إرسال الانشغالات
+        document.getElementById('complaintForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            document.getElementById('successMessage').style.display = 'block';
+            const formData = new FormData(this);
+            const state = formData.get('state');
+            const fixedEmail = "inshighalmcirmn@gmail.com";
+            const stateEmail = stateEmails[state] || "default@commerce.dz";
+
+            let reportNumber = localStorage.getItem('reportNumber') || 0;
+            reportNumber = parseInt(reportNumber) + 1;
+            localStorage.setItem('reportNumber', reportNumber);
+
+            const now = new Date();
+            const dateTime = now.toLocaleString('ar-DZ', { 
+                year: 'numeric', month: 'numeric', day: 'numeric', 
+                hour: 'numeric', minute: 'numeric', second: 'numeric' 
+            });
+
+            const emailParams = {
+                fullName: formData.get('fullName'),
+                phone: formData.get('phone'),
+                email: formData.get('email'),
+                state: state,
+                municipality: formData.get('municipality'),
+                description: formData.get('description'),
+                reportNumber: reportNumber,
+                dateTime: dateTime,
+                to_email: fixedEmail + "," + stateEmail
+            };
+
+            emailjs.send("service_su5ml39", "template_1yro6fl", emailParams)
+                .then(() => {
+                    console.log('تم الإرسال بنجاح!');
+                    setTimeout(() => {
+                        document.getElementById('successMessage').style.display = 'none';
+                    }, 2000);
+                }, (error) => {
+                    console.log('فشل الإرسال:', error);
+                });
+        });
+
+        // جلب البلاغات من Firebase وعرضها في شريط الأخبار
+        function fetchNotifications() {
+            db.collection("notifications").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
+                const tickerContent = document.getElementById('tickerContent');
+                let content = '';
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    content += `<a href="${data.link}" target="_blank">${data.title} - ${data.message}</a>`;
+                });
+                tickerContent.innerHTML = content || 'لا توجد إشعارات حاليًا';
+            }, (error) => {
+                console.error("خطأ في جلب البلاغات:", error);
+                document.getElementById('tickerContent').innerHTML = 'خطأ في تحميل الإشعارات';
+            });
+        }
+
+        // تحميل البلاغات عند فتح التطبيق
+        window.onload = fetchNotifications;
+    </script>
+</body>
+</html>
