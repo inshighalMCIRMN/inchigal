@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>واجهة تقديم الانشغالات</title>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-    <!-- إضافة مكتبات Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Fustat:wght@200..800&display=swap" rel="stylesheet">
@@ -38,26 +37,34 @@
         header h2 { font-size: 15px; }
         header h3 { font-size: 14px; }
         header p { font-size: 13px; margin: 5px 0; }
-        /* تنسيق شريط الأخبار */
         #newsTicker {
             background-color: #ffcc00;
             color: #000;
             padding: 5px;
             width: 90%;
             position: fixed;
-            top: 70px; /* أسفل الهيدر */
+            top: 70px;
             left: 30;
             font-size: 14px;
             overflow: hidden;
             white-space: nowrap;
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
-        #newsTicker a {
+        #tickerContent {
+            display: inline-block;
+            animation: marquee 20s linear infinite;
+        }
+        #tickerContent a {
             color: #000;
             text-decoration: none;
             margin: 0 20px;
         }
-        #newsTicker a:hover { text-decoration: underline; }
+        #tickerContent a:hover { text-decoration: underline; }
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        #newsTicker:hover #tickerContent { animation-play-state: paused; }
         @media (max-width: 768px) {
             header { padding: 3px; }
             header h1 { font-size: 16px; }
@@ -73,7 +80,7 @@
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
             width: 70%;
             max-width: 250px;
-            margin-top: 120px; /* لإفساح المجال لشريط الأخبار */
+            margin-top: 120px;
         }
         input, textarea, select {
             width: 90%;
@@ -117,11 +124,8 @@
         <p>مرحبًا، قدم انشغالك</p>
     </header>
 
-    <!-- شريط الأخبار المتحرك -->
     <div id="newsTicker">
-        <marquee direction="right" scrollamount="5" onmouseover="this.stop();" onmouseout="this.start();">
-            <span id="tickerContent">جارٍ التحميل...</span>
-        </marquee>
+        <span id="tickerContent">جارٍ التحميل...</span>
     </div>
 
     <div class="form-container">
@@ -222,7 +226,7 @@
     </div>
 
     <script>
-        // إعداد Firebase (استبدل هذا بالكود الذي حصلت عليه من Firebase)
+        // إعداد Firebase (استبدل هذا بإعداداتك من Firebase Console)
         const firebaseConfig = {
             apiKey: "AIzaSyAM-op2MBQjm00Nwo-eD0wxf8V1sdG5X8s",
             authDomain: "inshighalmcirmn-3037f.firebaseapp.com",
@@ -297,7 +301,6 @@
             "المنيعة": ""
         };
 
-        // إرسال الانشغالات
         document.getElementById('complaintForm').addEventListener('submit', function (event) {
             event.preventDefault();
             document.getElementById('successMessage').style.display = 'block';
@@ -339,7 +342,6 @@
                 });
         });
 
-        // جلب البلاغات من Firebase وعرضها في شريط الأخبار
         function fetchNotifications() {
             db.collection("notifications").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
                 const tickerContent = document.getElementById('tickerContent');
@@ -355,7 +357,6 @@
             });
         }
 
-        // تحميل البلاغات عند فتح التطبيق
         window.onload = fetchNotifications;
     </script>
 </body>
