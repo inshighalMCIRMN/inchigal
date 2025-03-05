@@ -8,7 +8,7 @@
     <script type="module">
         // استيراد مكتبات Firebase كموديولات
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-        import { getFirestore, collection, onSnapshot, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+        import { getFirestore, collection, onSnapshot, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
         // إعدادات Firebase (استبدل هذا بإعداداتك من Firebase Console)
         const firebaseConfig = {
@@ -17,8 +17,7 @@
             projectId: "inshighalmcirmn-3037f",
             storageBucket: "inshighalmcirmn-3037f.firebasestorage.app",
             messagingSenderId: "109645536978",
-            appId: "1:109645536978:web:8d094858df17cee18f970b",
-            measurementId: "G-V9M0MP9N0M"
+            appId: "G-V9M0MP9N0M"
         };
 
         // تهيئة Firebase
@@ -223,6 +222,12 @@
             max-width: 250px;
             margin-top: 120px;
         }
+        label {
+            display: block;
+            text-align: right;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
         input, textarea, select {
             width: 90%;
             padding: 6px;
@@ -232,6 +237,7 @@
             background: rgba(255, 255, 255, 0.9);
             color: #333;
             font-size: 12px;
+            direction: rtl;
         }
         input:focus, textarea:focus, select:focus {
             outline: none;
@@ -256,5 +262,114 @@
             margin-top: 10px;
         }
     </style>
+</head>
+<body>
+    <header>
+        <h1>الجمـهورية الجزائـرية الديمقـراطية الشعـبية</h1>
+        <h2>وزارة التجارة الداخلية وضبط السوق الوطنية</h2>
+        <h3>المديرية العامة للرقابة الاقتصادية وقمع الغش</h3>
+        <p>مرحبًا، قدم انشغالك</p>
+    </header>
+
+    <div id="newsTicker">
+        <span id="tickerContent">جارٍ التحميل...</span>
+    </div>
+
+    <div class="form-container">
+        <form id="complaintForm">
+            <label for="fullName">الاسم واللقب:</label>
+            <input type="text" id="fullName" name="fullName" placeholder="أدخل اسمك ولقبك" 
+                   pattern="[ء-ي\s]+" 
+                   title="يرجى إدخال حروف عربية فقط" 
+                   required>
+
+            <label for="phone">رقم الهاتف:</label>
+            <input type="tel" id="phone" name="phone" placeholder="0XXXXXXXXXX" 
+                   pattern="0[5-7][0-9]{8}" 
+                   title="يرجى إدخال رقم هاتف جزائري صحيح (10 أرقام تبدأ بـ 05، 06، أو 07)" 
+                   required>
+
+            <label for="email">البريد الإلكتروني:</label>
+            <input type="email" id="email" name="email" placeholder="أدخل بريدك الإلكتروني" 
+                   pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" 
+                   title="يرجى إدخال بريد إلكتروني صحيح (مثل example@domain.com)" 
+                   required>
+            
+            <label for="state">الولاية:</label>
+            <select id="state" name="state" required>
+                <option value="">اختر ولايتك</option>
+                <option value="أدرار">أدرار</option>
+                <option value="الشلف">الشلف</option>
+                <option value="الأغواط">الأغواط</option>
+                <option value="أم البواقي">أم البواقي</option>
+                <option value="باتنة">باتنة</option>
+                <option value="بجاية">بجاية</option>
+                <option value="بسكرة">بسكرة</option>
+                <option value="بشار">بشار</option>
+                <option value="البليدة">البليدة</option>
+                <option value="البويرة">البويرة</option>
+                <option value="تمنراست">تمنراست</option>
+                <option value="تبسة">تبسة</option>
+                <option value="تلمسان">تلمسان</option>
+                <option value="تيارت">تيارت</option>
+                <option value="تيزي وزو">تيزي وزو</option>
+                <option value="الجزائر">الجزائر</option>
+                <option value="الجلفة">الجلفة</option>
+                <option value="جيجل">جيجل</option>
+                <option value="سطيف">سطيف</option>
+                <option value="سعيدة">سعيدة</option>
+                <option value="سكيكدة">سكيكدة</option>
+                <option value="سيدي بلعباس">سيدي بلعباس</option>
+                <option value="عنابة">عنابة</option>
+                <option value="قالمة">قالمة</option>
+                <option value="قسنطينة">قسنطينة</option>
+                <option value="المدية">المدية</option>
+                <option value="مستغانم">مستغانم</option>
+                <option value="المسيلة">المسيلة</option>
+                <option value="معسكر">معسكر</option>
+                <option value="ورقلة">ورقلة</option>
+                <option value="وهران">وهران</option>
+                <option value="البيض">البيض</option>
+                <option value="إليزي">إليزي</option>
+                <option value="برج بوعريريج">برج بوعريريج</option>
+                <option value="بومرداس">بومرداس</option>
+                <option value="الطارف">الطارف</option>
+                <option value="تندوف">تندوف</option>
+                <option value="تيسمسيلت">تيسمسيلت</option>
+                <option value="الوادي">الوادي</option>
+                <option value="خنشلة">خنشلة</option>
+                <option value="سوق أهراس">سوق أهراس</option>
+                <option value="تيبازة">تيبازة</option>
+                <option value="ميلة">ميلة</option>
+                <option value="عين الدفلى">عين الدفلى</option>
+                <option value="النعامة">النعامة</option>
+                <option value="عين تموشنت">عين تموشنت</option>
+                <option value="غرداية">غرداية</option>
+                <option value="غليزان">غليزان</option>
+                <option value="تيميمون">تيميمون</option>
+                <option value="برج باجي مختار">برج باجي مختار</option>
+                <option value="أولاد جلال">أولاد جلال</option>
+                <option value="بني عباس">بني عباس</option>
+                <option value="إن صالح">إن صالح</option>
+                <option value="إن قزام">إن قزام</option>
+                <option value="تقرت">تقرت</option>
+                <option value="جانت">جانت</option>
+                <option value="المغير">المغير</option>
+                <option value="المنيعة">المنيعة</option>
+            </select>
+    
+            <label for="municipality">البلدية:</label>
+            <input type="text" id="municipality" name="municipality" placeholder="أدخل بلديتك" 
+                   pattern="[ء-ي\s]+" 
+                   title="يرجى إدخال حروف عربية فقط" 
+                   required>
+
+            <label for="description">وصف الانشغال:</label>
+            <textarea id="description" name="description" placeholder="اكتب وصفًا دقيقًا للانشغال" rows="5" required></textarea>
+            
+            <button type="submit">إرسال</button>
+        </form>
+        <p class="success-message" id="successMessage">تم الإرسال بنجاح، ستنظر مصالح التجارة في انشغالك</p>
+    </div>
 </body>
-</html>  
+</html>
