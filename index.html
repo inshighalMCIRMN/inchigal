@@ -162,60 +162,60 @@
             flex-direction: column;
             align-items: center;
         }
-
+    
         header {
             background-color: rgba(0, 0, 0, 0.8);
             color: white;
-            padding: 10px 0;
+            padding: 20px 0; /* زيادة padding لتكبير الهيدر */
             width: 100%;
             text-align: center;
             position: relative;
             z-index: 1000;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
         }
-
+    
         header h1, header h2, header h3 {
             margin: 5px 0;
-            font-size: 16px;
+            font-size: 18px; /* زيادة حجم الخط للعناوين */
         }
-
+    
         #newsTicker {
             background-color: #ffcc00;
             color: #000;
-            padding: 5px;
+            padding: 10px; /* زيادة padding لتحسين المظهر */
             width: 100%;
-            max-width: 1200px;
-            font-size: 14px;
+            max-width: 1400px; /* زيادة max-width لتوسيع الشريط */
+            font-size: 16px; /* زيادة حجم الخط */
             overflow: hidden;
             white-space: nowrap;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
             margin-bottom: 10px;
         }
-
+    
         #tickerContent {
             display: inline-block;
-            animation: marquee 30s linear infinite; /* زيادة الوقت لتسهيل القراءة على الهواتف */
+            animation: marquee 30s linear infinite;
         }
-
+    
         #tickerContent a {
             color: #000;
             text-decoration: none;
             margin: 0 15px;
         }
-
+    
         #tickerContent a:hover {
             text-decoration: underline;
         }
-
+    
         @keyframes marquee {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+            100% { transform: translateX(100%); }
         }
-
+    
         #newsTicker:hover #tickerContent {
             animation-play-state: paused;
         }
-
+    
         .form-container {
             background: rgba(255, 255, 255, 0.9);
             padding: 15px;
@@ -223,10 +223,10 @@
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
             width: 90%;
             max-width: 350px;
-            margin: 120px auto 20px;
+            margin: 100px auto 20px; /* تقليل margin-top لتقليل المسافة */
             z-index: 1;
         }
-
+    
         label {
             display: block;
             text-align: right;
@@ -234,7 +234,7 @@
             font-size: 16px;
             color: #333;
         }
-
+    
         input, textarea, select {
             width: 100%;
             padding: 10px;
@@ -247,13 +247,13 @@
             direction: rtl;
             box-sizing: border-box;
         }
-
+    
         input:focus, textarea:focus, select:focus {
             outline: none;
             border-color: #007bff;
             box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
         }
-
+    
         button {
             background-color: #0ea18e;
             color: white;
@@ -265,11 +265,11 @@
             width: 100%;
             transition: background-color 0.3s;
         }
-
+    
         button:hover {
             background-color: #088e78;
         }
-
+    
         .success-message {
             display: none;
             color: green;
@@ -277,46 +277,46 @@
             margin-top: 15px;
             font-size: 16px;
         }
-
+    
         @media (max-width: 768px) {
             header h1, header h2, header h3 {
-                font-size: 14px;
+                font-size: 16px; /* تعديل حجم الخط للشاشات المتوسطة */
             }
-
+    
             #newsTicker {
-                font-size: 12px;
-                padding: 3px;
+                font-size: 14px;
+                padding: 8px;
             }
-
+    
             .form-container {
-                margin-top: 100px;
+                margin-top: 80px; /* تقليل المسافة للشاشات المتوسطة */
                 padding: 12px;
                 width: 85%;
-                max-width: 320px; /* تقليص الحجم للشاشات الصغيرة */
+                max-width: 320px;
             }
-
+    
             label { font-size: 14px; }
             input, textarea, select { font-size: 12px; padding: 8px; }
             button { font-size: 16px; padding: 10px; }
         }
-
+    
         @media (max-width: 480px) {
             header h1, header h2, header h3 {
-                font-size: 12px;
+                font-size: 14px; /* تعديل حجم الخط للشاشات الصغيرة */
             }
-
+    
             #newsTicker {
-                font-size: 10px;
-                padding: 2px;
+                font-size: 12px;
+                padding: 6px;
             }
-
+    
             .form-container {
-                margin-top: 80px;
+                margin-top: 60px; /* تقليل المسافة للشاشات الصغيرة */
                 padding: 10px;
                 width: 90%;
                 max-width: 280px;
             }
-
+    
             label { font-size: 12px; margin-bottom: 6px; }
             input, textarea, select { font-size: 10px; padding: 6px; margin-bottom: 10px; }
             button { font-size: 14px; padding: 8px; }
