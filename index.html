@@ -166,26 +166,27 @@
         header {
             background-color: rgba(0, 0, 0, 0.8);
             color: white;
-            padding: 20px 0; /* زيادة padding لتكبير الهيدر */
+            padding: 20px 3mm; /* padding عمودي 20px وأفقي 3mm من الجانبين */
             width: 100%;
             text-align: center;
             position: relative;
             z-index: 1000;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            box-sizing: border-box; /* لضمان احتساب padding ضمن العرض */
         }
     
         header h1, header h2, header h3 {
             margin: 5px 0;
-            font-size: 18px; /* زيادة حجم الخط للعناوين */
+            font-size: 18px;
         }
     
         #newsTicker {
             background-color: #ffcc00;
             color: #000;
-            padding: 10px; /* زيادة padding لتحسين المظهر */
+            padding: 10px;
             width: 100%;
-            max-width: 1400px; /* زيادة max-width لتوسيع الشريط */
-            font-size: 16px; /* زيادة حجم الخط */
+            max-width: 1400px;
+            font-size: 16px;
             overflow: hidden;
             white-space: nowrap;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
@@ -223,7 +224,7 @@
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
             width: 90%;
             max-width: 350px;
-            margin: 100px auto 20px; /* تقليل margin-top لتقليل المسافة */
+            margin: 100px auto 20px;
             z-index: 1;
         }
     
@@ -280,7 +281,7 @@
     
         @media (max-width: 768px) {
             header h1, header h2, header h3 {
-                font-size: 16px; /* تعديل حجم الخط للشاشات المتوسطة */
+                font-size: 16px;
             }
     
             #newsTicker {
@@ -289,7 +290,7 @@
             }
     
             .form-container {
-                margin-top: 80px; /* تقليل المسافة للشاشات المتوسطة */
+                margin-top: 80px;
                 padding: 12px;
                 width: 85%;
                 max-width: 320px;
@@ -301,8 +302,12 @@
         }
     
         @media (max-width: 480px) {
+            header {
+                padding: 15px 3mm; /* تقليل padding العمودي للهواتف مع الاحتفاظ بـ 3mm أفقيًا */
+            }
+    
             header h1, header h2, header h3 {
-                font-size: 14px; /* تعديل حجم الخط للشاشات الصغيرة */
+                font-size: 14px;
             }
     
             #newsTicker {
@@ -311,7 +316,7 @@
             }
     
             .form-container {
-                margin-top: 60px; /* تقليل المسافة للشاشات الصغيرة */
+                margin-top: 60px;
                 padding: 10px;
                 width: 90%;
                 max-width: 280px;
