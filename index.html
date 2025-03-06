@@ -6,11 +6,11 @@
     <title>واجهة تقديم الانشغالات</title>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script type="module">
-        // استيراد مكتبات Firebase كموديولات
+        // استيراد مكتبات Firebase
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
         import { getFirestore, collection, onSnapshot, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
-        // إعدادات Firebase (استبدلت بإعداداتك من الكود)
+        // إعدادات Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyAM-op2MBQjm00Nwo-eD0wxf8V1sdG5X8s",
             authDomain: "inshighalmcirmn-3037f.firebaseapp.com",
@@ -24,7 +24,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // بقية الكود
+        // تهيئة EmailJS
         emailjs.init("nVPGHqM9IKHQ9ObVJ");
 
         const stateEmails = {
@@ -88,7 +88,7 @@
             "المنيعة": ""
         };
 
-        document.getElementById('complaintForm').addEventListener('submit', function (event) {
+        document.getElementById('complaintForm').addEventListener('submit', function(event) {
             event.preventDefault();
             document.getElementById('successMessage').style.display = 'block';
             const formData = new FormData(this);
@@ -101,9 +101,9 @@
             localStorage.setItem('reportNumber', reportNumber);
 
             const now = new Date();
-            const dateTime = now.toLocaleString('ar-DZ', { 
-                year: 'numeric', month: 'numeric', day: 'numeric', 
-                hour: 'numeric', minute: 'numeric', second: 'numeric' 
+            const dateTime = now.toLocaleString('ar-DZ', {
+                year: 'numeric', month: 'numeric', day: 'numeric',
+                hour: 'numeric', minute: 'numeric', second: 'numeric'
             });
 
             const emailParams = {
@@ -134,15 +134,32 @@
             onSnapshot(query(notificationsRef, orderBy("timestamp", "desc")), (snapshot) => {
                 const tickerContent = document.getElementById('tickerContent');
                 let content = '';
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    content += `<a href="${data.link}" target="_blank">${data.title} - ${data.message}</a>`;
+                snapshot.docChanges().forEach((change) => {
+                    if (change.type === "added") {
+                        const data = change.doc.data();
+                        content += `<a href="${data.link}" target="_blank">${data.title} - ${data.message}</a>`;
+                        // إظهار إشعار داخلي عند إضافة بيان جديد
+                        showNotification(data.title, data.message);
+                    }
                 });
                 tickerContent.innerHTML = content || 'لا توجد إشعارات حاليًا';
             }, (error) => {
                 console.error("خطأ في جلب البلاغات:", error);
-                document.getElementById('tickerContent').innerHTML = 'خطأ في تحميل الإشعارات';
+                tickerContent.innerHTML = 'خطأ في تحميل الإشعارات';
             });
+        }
+
+        // دالة لإظهار الإشعار الداخلي
+        function showNotification(title, message) {
+            const notificationDiv = document.createElement('div');
+            notificationDiv.className = 'internal-notification';
+            notificationDiv.innerHTML = `<strong>${title}</strong><br>${message}`;
+            document.body.appendChild(notificationDiv);
+
+            // إزالة الإشعار بعد 5 ثوانٍ
+            setTimeout(() => {
+                notificationDiv.remove();
+            }, 5000);
         }
 
         window.onload = fetchNotifications;
@@ -162,24 +179,24 @@
             flex-direction: column;
             align-items: center;
         }
-    
+
         header {
             background-color: rgba(0, 0, 0, 0.8);
             color: white;
-            padding: 20px 3mm; /* padding عمودي 20px وأفقي 3mm من الجانبين */
+            padding: 20px 3mm;
             width: 100%;
             text-align: center;
             position: relative;
             z-index: 1000;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-            box-sizing: border-box; /* لضمان احتساب padding ضمن العرض */
+            box-sizing: border-box;
         }
-    
+
         header h1, header h2, header h3 {
             margin: 5px 0;
             font-size: 18px;
         }
-    
+
         #newsTicker {
             background-color: #ffcc00;
             color: #000;
@@ -192,31 +209,31 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
             margin-bottom: 10px;
         }
-    
+
         #tickerContent {
             display: inline-block;
             animation: marquee 30s linear infinite;
         }
-    
+
         #tickerContent a {
             color: #000;
             text-decoration: none;
             margin: 0 15px;
         }
-    
+
         #tickerContent a:hover {
             text-decoration: underline;
         }
-    
+
         @keyframes marquee {
-            100% { transform: translateX(100%); }
+           100% { transform: translateX(100%); }
             100% { transform: translateX(100%); }
         }
-    
+
         #newsTicker:hover #tickerContent {
             animation-play-state: paused;
         }
-    
+
         .form-container {
             background: rgba(255, 255, 255, 0.9);
             padding: 15px;
@@ -227,7 +244,7 @@
             margin: 100px auto 20px;
             z-index: 1;
         }
-    
+
         label {
             display: block;
             text-align: right;
@@ -235,7 +252,7 @@
             font-size: 16px;
             color: #333;
         }
-    
+
         input, textarea, select {
             width: 100%;
             padding: 10px;
@@ -248,13 +265,13 @@
             direction: rtl;
             box-sizing: border-box;
         }
-    
+
         input:focus, textarea:focus, select:focus {
             outline: none;
             border-color: #007bff;
             box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
         }
-    
+
         button {
             background-color: #0ea18e;
             color: white;
@@ -266,11 +283,11 @@
             width: 100%;
             transition: background-color 0.3s;
         }
-    
+
         button:hover {
             background-color: #088e78;
         }
-    
+
         .success-message {
             display: none;
             color: green;
@@ -278,54 +295,71 @@
             margin-top: 15px;
             font-size: 16px;
         }
-    
+
+        /* تنسيق الإشعار الداخلي */
+        .internal-notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            z-index: 2000;
+            text-align: center;
+            max-width: 300px;
+        }
+
         @media (max-width: 768px) {
             header h1, header h2, header h3 {
                 font-size: 16px;
             }
-    
+
             #newsTicker {
                 font-size: 14px;
                 padding: 8px;
             }
-    
+
             .form-container {
                 margin-top: 80px;
                 padding: 12px;
                 width: 85%;
                 max-width: 320px;
             }
-    
+
             label { font-size: 14px; }
             input, textarea, select { font-size: 12px; padding: 8px; }
             button { font-size: 16px; padding: 10px; }
         }
-    
+
         @media (max-width: 480px) {
             header {
-                padding: 15px 3mm; /* تقليل padding العمودي للهواتف مع الاحتفاظ بـ 3mm أفقيًا */
+                padding: 15px 3mm;
             }
-    
+
             header h1, header h2, header h3 {
                 font-size: 14px;
             }
-    
+
             #newsTicker {
                 font-size: 12px;
                 padding: 6px;
             }
-    
+
             .form-container {
                 margin-top: 60px;
                 padding: 10px;
                 width: 90%;
                 max-width: 280px;
             }
-    
+
             label { font-size: 12px; margin-bottom: 6px; }
             input, textarea, select { font-size: 10px; padding: 6px; margin-bottom: 10px; }
             button { font-size: 14px; padding: 8px; }
             .success-message { font-size: 14px; }
+            .internal-notification { max-width: 250px; }
         }
     </style>
 </head>
