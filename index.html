@@ -200,11 +200,12 @@
         function fetchNotifications() {
             const notificationsRef = collection(db, "notifications");
             const tickerContent = document.getElementById('tickerContent');
+            let isInitialLoad = true; // متغير لتتبع التحميل الأولي
 
             onSnapshot(query(notificationsRef, orderBy("timestamp", "desc")), (snapshot) => {
                 let content = '';
 
-                // تحديث محتوى الشريط الإخباري
+                // تحديث محتوى الشريط الإخباري بجميع الإشعارات
                 snapshot.forEach(doc => {
                     const data = doc.data();
                     if (data.title && data.message && data.link) {
@@ -215,16 +216,21 @@
                 });
                 tickerContent.innerHTML = content || 'لا توجد إشعارات حاليًا';
 
-                // التحقق من الإشعارات الجديدة
-                snapshot.docChanges().forEach((change) => {
-                    if (change.type === "added") {
-                        const data = change.doc.data();
-                        if (data.title && data.message) {
-                            // عرض إشعار داخلي عند إضافة إشعار جديد
-                            showNotification("إشعار جديد", `${data.title} - ${data.message}`);
+                // التحقق من التغييرات فقط بعد التحميل الأولي
+                if (!isInitialLoad) {
+                    snapshot.docChanges().forEach((change) => {
+                        if (change.type === "added") {
+                            const data = change.doc.data();
+                            if (data.title && data.message) {
+                                // عرض إشعار داخلي عند إضافة إشعار جديد
+                                showNotification("إشعار جديد", `${data.title} - ${data.message}`);
+                            }
                         }
-                    }
-                });
+                    });
+                }
+
+                // تعيين isInitialLoad إلى false بعد التحميل الأولي
+                isInitialLoad = false;
             }, (error) => {
                 console.error("خطأ في جلب الإشعارات:", error);
                 tickerContent.innerHTML = 'خطأ في تحميل الإشعارات: ' + error.message;
