@@ -124,7 +124,7 @@
                     try {
                         console.log("رفع الملف:", file.name);
                         const base64String = await toBase64(file);
-                        const apiKey = "8598ff9232542b73b8272a6a4aa048bb"; // استبدل بـ API Key الخاص بك
+                        const apiKey = "8598ff9232542b73b8272a6a4aa048bb";
                         const url = `https://api.imgbb.com/1/upload?key=${apiKey}`;
 
                         const uploadData = new FormData();
@@ -173,7 +173,7 @@
 
             console.log("البيانات المرسلة إلى EmailJS:", emailParams);
 
-            emailjs.send("service_09oa41r", "template_zjtbspb", emailParams) // استبدل بـ "template_newId" إذا أنشأت قالبًا جديدًا
+            emailjs.send("service_09oa41r", "template_zjtbspb", emailParams)
                 .then(() => {
                     console.log('تم الإرسال بنجاح!');
                     setTimeout(() => {
@@ -184,15 +184,29 @@
                 });
         });
 
+        // دالة لعرض الإشعار الداخلي
+        function showNotification(title, message) {
+            const notificationDiv = document.createElement('div');
+            notificationDiv.className = 'internal-notification';
+            notificationDiv.innerHTML = `<strong>${title}</strong><br>${message}`;
+            document.body.appendChild(notificationDiv);
+
+            setTimeout(() => {
+                notificationDiv.remove();
+            }, 5000); // الإشعار يختفي بعد 5 ثوانٍ
+        }
+
+        // دالة لجلب الإشعارات مع تتبع الإضافات الجديدة
         function fetchNotifications() {
             const notificationsRef = collection(db, "notifications");
+            const tickerContent = document.getElementById('tickerContent');
+
             onSnapshot(query(notificationsRef, orderBy("timestamp", "desc")), (snapshot) => {
-                const tickerContent = document.getElementById('tickerContent');
                 let content = '';
-                console.log("عدد المستندات:", snapshot.size);
+
+                // تحديث محتوى الشريط الإخباري
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    console.log("البيانات:", data);
                     if (data.title && data.message && data.link) {
                         content += `<a href="${data.link}" target="_blank">${data.title} - ${data.message}</a>`;
                     } else {
@@ -200,24 +214,22 @@
                     }
                 });
                 tickerContent.innerHTML = content || 'لا توجد إشعارات حاليًا';
+
+                // التحقق من الإشعارات الجديدة
+                snapshot.docChanges().forEach((change) => {
+                    if (change.type === "added") {
+                        const data = change.doc.data();
+                        if (data.title && data.message) {
+                            // عرض إشعار داخلي عند إضافة إشعار جديد
+                            showNotification("إشعار جديد", `${data.title} - ${data.message}`);
+                        }
+                    }
+                });
             }, (error) => {
-                console.error("خطأ في جلب البلاغات:", error);
-                document.getElementById('tickerContent').innerHTML = 'خطأ في تحميل الإشعارات: ' + error.message;
+                console.error("خطأ في جلب الإشعارات:", error);
+                tickerContent.innerHTML = 'خطأ في تحميل الإشعارات: ' + error.message;
             });
         }
-
-        function showNotification(title, message) {
-            const notificationDiv = document.createElement('div');
-            notificationDiv.className = 'internal-notification';
-            notificationDiv.innerHTML = `<strong>${title}</strong><br>${message}`;
-            document.body.appendChild(notificationDiv);
-
-            // إزالة الإشعار بعد 5 ثوانٍ
-            setTimeout(() => {
-                notificationDiv.remove();
-            }, 5000);
-        }
-
 
         window.onload = fetchNotifications;
     </script>
@@ -235,6 +247,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            position: relative;
         }
 
         header {
@@ -269,7 +282,7 @@
 
         #tickerContent {
             display: inline-block;
-            animation: marquee 40s linear infinite;
+            animation: marquee 60s linear infinite;
         }
 
         #tickerContent a {
@@ -347,15 +360,38 @@
 
         .success-message {
             position: fixed;
-             top: 50%;
-             left: 50%;
-             transform: translate(-50%, -50%);
-             background-color: #4caf50;
-             color: white;
-             padding: 15px;
-             border-radius: 5px;
-             display: none;
-             z-index: 1000;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #4caf50;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+            z-index: 1000;
+        }
+
+        /* أسلوب للإشعار الداخلي */
+        .internal-notification {
+            position: absolute;
+            top: 130px; /* أسفل الهيدر مباشرة */
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #ffcc00;
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            z-index: 1001;
+            animation: fadeOut 7s forwards;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { opacity: 0; visibility: hidden; }
         }
 
         @media (max-width: 768px) {
@@ -378,6 +414,9 @@
             label { font-size: 14px; }
             input, textarea, select { font-size: 12px; padding: 8px; }
             button { font-size: 16px; padding: 10px; }
+            .internal-notification {
+                top: 110px; /* تعديل للشاشات المتوسطة */
+            }
         }
 
         @media (max-width: 480px) {
@@ -405,6 +444,11 @@
             input, textarea, select { font-size: 10px; padding: 6px; margin-bottom: 10px; }
             button { font-size: 14px; padding: 8px; }
             .success-message { font-size: 14px; }
+            .internal-notification {
+                top: 100px; /* تعديل للشاشات الصغيرة */
+                padding: 8px 15px;
+                font-size: 12px;
+            }
         }
     </style>
 </head>
@@ -500,7 +544,6 @@
                 <option value="المغير">المغير</option>
                 <option value="المنيعة">المنيعة</option>
                 <option value="آفلو">آفلو</option>
-
             </select>
     
             <label for="municipality">البلدية:</label>
