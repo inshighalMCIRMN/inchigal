@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المديريات</title>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+        import { getFirestore, collection, onSnapshot, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAM-op2MBQjm00Nwo-eD0wxf8V1sdG5X8s",
+            authDomain: "inshighalmcirmn-3037f.firebaseapp.com",
+            projectId: "inshighalmcirmn-3037f",
+            storageBucket: "inshighalmcirmn-3037f.firebasestorage.app",
+            messagingSenderId: "109645536978",
+            appId: "G-V9M0MP9N0M"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        function showNotification(title, message) {
+            const notificationDiv = document.createElement('div');
+            notificationDiv.className = 'internal-notification';
+            notificationDiv.innerHTML = `<strong>${title}</strong><br>${message}`;
+            document.body.appendChild(notificationDiv);
+            setTimeout(() => notificationDiv.remove(), 5000);
+        }
+
+        function fetchNotifications() {
+            const notificationsRef = collection(db, "notifications");
+            const tickerContent = document.getElementById('tickerContent');
+            let isInitialLoad = true;
+
+            onSnapshot(query(notificationsRef, orderBy("timestamp", "desc")), (snapshot) => {
+                let content = '';
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.title && data.message && data.link) {
+                        content += `<a href="${data.link}" target="_blank">${data.title} - ${data.message}</a>`;
+                    }
+                });
+                tickerContent.innerHTML = content || 'لا توجد إشعارات حاليًا';
+
+                if (!isInitialLoad) {
+                    snapshot.docChanges().forEach((change) => {
+                        if (change.type === "added") {
+                            const data = change.doc.data();
+                            if (data.title && data.message) {
+                                showNotification("إشعار جديد", `${data.title} - ${data.message}`);
+                            }
+                        }
+                    });
+                }
+                isInitialLoad = false;
+            }, (error) => {
+                console.error("خطأ في جلب الإشعارات:", error);
+                tickerContent.innerHTML = 'خطأ في تحميل الإشعارات: ' + error.message;
+            });
+        }
+
+        const directoratesLinks = {
+            regional: {
+                "الجزائر": "https://www.commerce.gov.dz/drw-alger",
+                "وهران": "https://www.commerce.gov.dz/drw-oran",
+                "قسنطينة": "https://www.commerce.gov.dz/drw-constantine",
+                "عنابة": "https://www.commerce.gov.dz/drw-annaba",
+                "ورقلة": "https://www.commerce.gov.dz/drw-ouargla",
+                "بشار": "https://www.commerce.gov.dz/drw-bechar",
+                "تمنراست": "https://www.commerce.gov.dz/drw-tamanrasset",
+                "باتنة": "https://www.commerce.gov.dz/drw-batna",
+                "سطيف": "https://www.commerce.gov.dz/drw-setif"
+            },
+            state: {
+                "أدرار": "https://www.commerce.gov.dz/dw-adrar",
+                "الشلف": "https://www.commerce.gov.dz/dw-chlef",
+                "الأغواط": "https://www.commerce.gov.dz/dw-laghouat",
+                "أم البواقي": "https://www.commerce.gov.dz/dw-oum-el-bouaghi",
+                "باتنة": "https://www.commerce.gov.dz/dw-batna",
+                "بجاية": "https://www.commerce.gov.dz/dw-bejaia",
+                "بسكرة": "https://www.commerce.gov.dz/dw-biskra",
+                "بشار": "https://www.commerce.gov.dz/dw-bechar",
+                "البليدة": "https://www.commerce.gov.dz/dw-blida",
+                "البويرة": "https://www.commerce.gov.dz/dw-bouira",
+                "تمنراست": "https://www.commerce.gov.dz/dw-tamanrasset",
+                "تبسة": "https://www.commerce.gov.dz/dw-tebessa",
+                "تلمسان": "https://www.commerce.gov.dz/dw-tlemcen",
+                "تيارت": "https://www.commerce.gov.dz/dw-tiaret",
+                "تيزي وزو": "https://www.commerce.gov.dz/dw-tizi-ouzou",
+                "الجزائر": "https://www.commerce.gov.dz/dw-alger",
+                "الجلفة": "https://www.commerce.gov.dz/dw-djelfa",
+                "جيجل": "https://www.commerce.gov.dz/dw-jijel",
+                "سطيف": "https://www.commerce.gov.dz/dw-setif",
+                "سعيدة": "https://www.commerce.gov.dz/dw-saida",
+                "سكيكدة": "https://www.commerce.gov.dz/dw-skikda",
+                "سيدي بلعباس": "https://www.commerce.gov.dz/dw-sidi-bel-abbes",
+                "عنابة": "https://www.commerce.gov.dz/dw-annaba",
+                "قالمة": "https://www.commerce.gov.dz/dw-guelma",
+                "قسنطينة": "https://www.commerce.gov.dz/dw-constantine",
+                "المدية": "https://www.commerce.gov.dz/dw-medea",
+                "مستغانم": "https://www.commerce.gov.dz/dw-mostaganem",
+                "المسيلة": "https://www.commerce.gov.dz/dw-msila",
+                "معسكر": "https://www.commerce.gov.dz/dw-mascara",
+                "ورقلة": "https://www.commerce.gov.dz/dw-ouargla",
+                "وهران": "https://www.commerce.gov.dz/dw-oran",
+                "البيض": "https://www.commerce.gov.dz/dw-el-bayadh",
+                "إليزي": "https://www.commerce.gov.dz/dw-illizi",
+                "برج بوعريريج": "https://www.commerce.gov.dz/dw-bordj-bou-arreridj",
+                "بومرداس": "https://www.commerce.gov.dz/dw-boumerdes",
+                "الطارف": "https://www.commerce.gov.dz/dw-el-tarf",
+                "تندوف": "https://www.commerce.gov.dz/dw-tindouf",
+                "تيسمسيلت": "https://www.commerce.gov.dz/dw-tissemsilt",
+                "الوادي": "https://www.commerce.gov.dz/dw-el-oued",
+                "خنشلة": "https://www.commerce.gov.dz/dw-khenchela",
+                "سوق أهراس": "https://www.commerce.gov.dz/dw-souk-ahrass",
+                "تيبازة": "https://www.commerce.gov.dz/dw-tipaza",
+                "ميلة": "https://www.commerce.gov.dz/dw-mila",
+                "عين الدفلى": "https://www.commerce.gov.dz/dw-ain-defla",
+                "النعامة": "https://www.commerce.gov.dz/dw-naama",
+                "عين تموشنت": "https://www.commerce.gov.dz/dw-ain-temouchent",
+                "غرداية": "https://www.commerce.gov.dz/dw-ghardaia",
+                "غليزان": "https://www.commerce.gov.dz/dw-relizane",
+                "تيميمون": "https://www.commerce.gov.dz/dw-timimoun",
+                "برج باجي مختار": "https://www.commerce.gov.dz/dw-bordj-badji-mokhtar",
+                "أولاد جلال": "https://www.commerce.gov.dz/dw-ouled-djellal",
+                "بني عباس": "https://www.commerce.gov.dz/dw-beni-abbes",
+                "إن صالح": "https://www.commerce.gov.dz/dw-in-salah",
+                "إن قزام": "https://www.commerce.gov.dz/dw-in-guezzam",
+                "تقرت": "https://www.commerce.gov.dz/dw-touggourt",
+                "جانت": "https://www.commerce.gov.dz/dw-djanet",
+                "المغير": "https://www.commerce.gov.dz/dw-el-meghaier",
+                "المنيعة": "https://www.commerce.gov.dz/dw-el-meniaa"
+            }
+        };
+
+        function updateRegionalLink() {
+            const regionalSelect = document.getElementById('regionalDirectorate');
+            const regionalLinkContainer = document.getElementById('regionalLinkContainer');
+            const regionalLinkText = document.getElementById('regionalLinkText');
+            const regionalLinkAnchor = document.getElementById('regionalLinkBox');
+
+            if (regionalSelect.value !== '') {
+                const selectedDirectorate = `المديرية الجهوية للتجارة - ${regionalSelect.value}`;
+                const selectedLink = directoratesLinks.regional[regionalSelect.value];
+                regionalLinkText.textContent = selectedDirectorate;
+                regionalLinkAnchor.href = selectedLink;
+                regionalLinkContainer.style.display = 'block';
+            } else {
+                regionalLinkContainer.style.display = 'none';
+            }
+        }
+
+        function updateStateLink() {
+            const stateSelect = document.getElementById('stateDirectorate');
+            const stateLinkContainer = document.getElementById('stateLinkContainer');
+            const stateLinkText = document.getElementById('stateLinkText');
+            const stateLinkAnchor = document.getElementById('stateLinkBox');
+
+            if (stateSelect.value !== '') {
+                const selectedDirectorate = `مديرية التجارة لولاية ${stateSelect.value}`;
+                const selectedLink = directoratesLinks.state[stateSelect.value];
+                stateLinkText.textContent = selectedDirectorate;
+                stateLinkAnchor.href = selectedLink;
+                stateLinkContainer.style.display = 'block';
+            } else {
+                stateLinkContainer.style.display = 'none';
+            }
+        }
+
+        window.onload = function() {
+            fetchNotifications();
+            document.getElementById('regionalDirectorate').addEventListener('change', updateRegionalLink);
+            document.getElementById('stateDirectorate').addEventListener('change', updateStateLink);
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Fustat:wght@200..800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Fustat', 'Arial', sans-serif;
+            text-align: center;
+            direction: rtl;
+            background: url('a1.png') no-repeat center center fixed;
+            background-size: cover;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        header {
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 20px 3mm;
+            width: 100%;
+            text-align: center;
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            box-sizing: border-box;
+        }
+
+        header h1, header h2, header h3 {
+            margin: 5px 0;
+            font-size: 18px;
+        }
+
+        #newsTicker {
+            background-color: #ffcc00;
+            color: #000;
+            padding: 10px;
+            width: 100%;
+            max-width: 1400px;
+            font-size: 16px;
+            overflow: hidden;
+            white-space: nowrap;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            margin-top: 10px;
+        }
+
+        #tickerContent {
+            display: inline-block;
+            animation: marquee 60s linear infinite;
+        }
+
+        #tickerContent a {
+            color: #000;
+            text-decoration: none;
+            margin: 0 15px;
+        }
+
+        #tickerContent a:hover {
+            text-decoration: underline;
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        #newsTicker:hover #tickerContent {
+            animation-play-state: paused;
+        }
+
+        .form-container {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 350px;
+            margin: 240px auto 20px;
+        }
+
+        label {
+            display: block;
+            text-align: right;
+            margin-bottom: 8px;
+            font-size: 16px;
+            color: #333;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 12px;
+            border: 2px solid #f09041;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 1);
+            color: #333;
+            font-size: 14px;
+            direction: rtl;
+            box-sizing: border-box;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
+        }
+
+        #regionalLinkContainer, #stateLinkContainer {
+            display: none;
+            margin-top: 10px;
+            margin-bottom: 12px;
+        }
+
+        #regionalLinkBox, #stateLinkBox {
+            background-color: #0ea18e;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            display: block;
+        }
+
+        #regionalLinkBox:hover, #stateLinkBox:hover {
+            background-color: #088e78;
+        }
+
+        .internal-notification {
+            position: absolute;
+            top: 260px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #ffcc00;
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            z-index: 1001;
+            animation: fadeOut 7s forwards;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { opacity: 0; visibility: hidden; }
+        }
+
+        .nav-arrow {
+            position: fixed;
+            top: 165px;
+            z-index: 1000;
+            background-color: #0ea18e;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .nav-arrow:hover {
+            background-color: #088e78;
+        }
+
+        .nav-arrow.right {
+            right: 20px;
+        }
+
+        .nav-arrow.left {
+            left: 20px;
+        }
+
+        .nav-arrow::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            top: -30px;
+            background-color: #333;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .nav-arrow.right::after {
+            right: 0;
+        }
+
+        .nav-arrow.left::after {
+            left: 0;
+        }
+
+        .nav-arrow:hover::after {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            header h1, header h2, header h3 { font-size: 16px; }
+            #newsTicker { font-size: 14px; padding: 8px; }
+            .form-container { margin-top: 230px; padding: 12px; width: 85%; max-width: 320px; }
+            label { font-size: 14px; }
+            select { font-size: 12px; padding: 8px; }
+            #regionalLinkBox, #stateLinkBox { font-size: 14px; padding: 8px; }
+            .internal-notification { top: 250px; }
+            .nav-arrow { top: 165px; font-size: 14px; padding: 8px 12px; }
+            .nav-arrow::after { font-size: 10px; top: -25px; }
+        }
+
+        @media (max-width: 480px) {
+            header { padding: 15px 3mm; }
+            header h1, header h2, header h3 { font-size: 14px; }
+            #newsTicker { font-size: 12px; padding: 6px; }
+            .form-container { margin-top: 220px; padding: 10px; width: 90%; max-width: 280px; }
+            label { font-size: 12px; margin-bottom: 6px; }
+            select { font-size: 10px; padding: 6px; margin-bottom: 10px; }
+            #regionalLinkBox, #stateLinkBox { font-size: 12px; padding: 6px; }
+            .internal-notification { top: 240px; padding: 8px 15px; font-size: 12px; }
+            .nav-arrow { top: 165px; font-size: 12px; padding: 6px 10px; }
+            .nav-arrow::after { font-size: 8px; top: -20px; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>الجمـهورية الجزائـرية الديمقـراطية الشعـبية</h1>
+        <h2>وزارة التجارة الداخلية وضبط السوق الوطنية</h2>
+        <h3>المديرية العامة للرقابة الاقتصادية وقمع الغش</h3>
+        <div id="newsTicker">
+            <span id="tickerContent">جارٍ التحميل...</span>
+        </div>
+    </header>
+
+    <a href="#" class="nav-arrow right" data-tooltip="الصفحة التالية غير متاحة">الصفحة التالية →</a>
+    <a href="external-services.html" class="nav-arrow left" data-tooltip="العودة إلى صفحة الخدمات الخارجية">← الصفحة السابقة</a>
+
+    <div class="form-container">
+        <label for="regionalDirectorate">اختر المديرية الجهوية:</label>
+        <select id="regionalDirectorate">
+            <option value="">اختر المديرية الجهوية</option>
+            <option value="الجزائر">الجزائر</option>
+            <option value="وهران">وهران</option>
+            <option value="قسنطينة">قسنطينة</option>
+            <option value="عنابة">عنابة</option>
+            <option value="ورقلة">ورقلة</option>
+            <option value="بشار">بشار</option>
+            <option value="تمنراست">تمنراست</option>
+            <option value="باتنة">باتنة</option>
+            <option value="سطيف">سطيف</option>
+        </select>
+        <div id="regionalLinkContainer">
+            <a id="regionalLinkBox" href="#" target="_blank">
+                <span id="regionalLinkText"></span>
+            </a>
+        </div>
+
+        <label for="stateDirectorate">اختر المديرية الولائية:</label>
+        <select id="stateDirectorate">
+            <option value="">اختر المديرية الولائية</option>
+            <option value="أدرار">أدرار</option>
+            <option value="الشلف">الشلف</option>
+            <option value="الأغواط">الأغواط</option>
+            <option value="أم البواقي">أم البواقي</option>
+            <option value="باتنة">باتنة</option>
+            <option value="بجاية">بجاية</option>
+            <option value="بسكرة">بسكرة</option>
+            <option value="بشار">بشار</option>
+            <option value="البليدة">البليدة</option>
+            <option value="البويرة">البويرة</option>
+            <option value="تمنراست">تمنراست</option>
+            <option value="تبسة">تبسة</option>
+            <option value="تلمسان">تلمسان</option>
+            <option value="تيارت">تيارت</option>
+            <option value="تيزي وزو">تيزي وزو</option>
+            <option value="الجزائر">الجزائر</option>
+            <option value="الجلفة">الجلفة</option>
+            <option value="جيجل">جيجل</option>
+            <option value="سطيف">سطيف</option>
+            <option value="سعيدة">سعيدة</option>
+            <option value="سكيكدة">سكيكدة</option>
+            <option value="سيدي بلعباس">سيدي بلعباس</option>
+            <option value="عنابة">عنابة</option>
+            <option value="قالمة">قالمة</option>
+            <option value="قسنطينة">قسنطينة</option>
+            <option value="المدية">المدية</option>
+            <option value="مستغانم">مستغانم</option>
+            <option value="المسيلة">المسيلة</option>
+            <option value="معسكر">معسكر</option>
+            <option value="ورقلة">ورقلة</option>
+            <option value="وهران">وهران</option>
+            <option value="البيض">البيض</option>
+            <option value="إليزي">إليزي</option>
+            <option value="برج بوعريريج">برج بوعريريج</option>
+            <option value="بومرداس">بومرداس</option>
+            <option value="الطارف">الطارف</option>
+            <option value="تندوف">تندوف</option>
+            <option value="تيسمسيلت">تيسمسيلت</option>
+            <option value="الوادي">الوادي</option>
+            <option value="خنشلة">خنشلة</option>
+            <option value="سوق أهراس">سوق أهراس</option>
+            <option value="تيبازة">تيبازة</option>
+            <option value="ميلة">ميلة</option>
+            <option value="عين الدفلى">عين الدفلى</option>
+            <option value="النعامة">النعامة</option>
+            <option value="عين تموشنت">عين تموشنت</option>
+            <option value="غرداية">غرداية</option>
+            <option value="غليزان">غليزان</option>
+            <option value="تيميمون">تيميمون</option>
+            <option value="برج باجي مختار">برج باجي مختار</option>
+            <option value="أولاد جلال">أولاد جلال</option>
+            <option value="بني عباس">بني عباس</option>
+            <option value="إن صالح">إن صالح</option>
+            <option value="إن قزام">إن قزام</option>
+            <option value="تقرت">تقرت</option>
+            <option value="جانت">جانت</option>
+            <option value="المغير">المغير</option>
+            <option value="المنيعة">المنيعة</option>
+        </select>
+        <div id="stateLinkContainer">
+            <a id="stateLinkBox" href="#" target="_blank">
+                <span id="stateLinkText"></span>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

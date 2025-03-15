@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الخدمات الخارجية</title>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+        import { getFirestore, collection, onSnapshot, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAM-op2MBQjm00Nwo-eD0wxf8V1sdG5X8s",
+            authDomain: "inshighalmcirmn-3037f.firebaseapp.com",
+            projectId: "inshighalmcirmn-3037f",
+            storageBucket: "inshighalmcirmn-3037f.firebasestorage.app",
+            messagingSenderId: "109645536978",
+            appId: "G-V9M0MP9N0M"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        function showNotification(title, message) {
+            const notificationDiv = document.createElement('div');
+            notificationDiv.className = 'internal-notification';
+            notificationDiv.innerHTML = `<strong>${title}</strong><br>${message}`;
+            document.body.appendChild(notificationDiv);
+            setTimeout(() => notificationDiv.remove(), 5000);
+        }
+
+        function fetchNotifications() {
+            const notificationsRef = collection(db, "notifications");
+            const tickerContent = document.getElementById('tickerContent');
+            let isInitialLoad = true;
+
+            onSnapshot(query(notificationsRef, orderBy("timestamp", "desc")), (snapshot) => {
+                let content = '';
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.title && data.message && data.link) {
+                        content += `<a href="${data.link}" target="_blank">${data.title} - ${data.message}</a>`;
+                    }
+                });
+                tickerContent.innerHTML = content || 'لا توجد إشعارات حاليًا';
+
+                if (!isInitialLoad) {
+                    snapshot.docChanges().forEach((change) => {
+                        if (change.type === "added") {
+                            const data = change.doc.data();
+                            if (data.title && data.message) {
+                                showNotification("إشعار جديد", `${data.title} - ${data.message}`);
+                            }
+                        }
+                    });
+                }
+                isInitialLoad = false;
+            }, (error) => {
+                console.error("خطأ في جلب الإشعارات:", error);
+                tickerContent.innerHTML = 'خطأ في تحميل الإشعارات: ' + error.message;
+            });
+        }
+
+        window.onload = fetchNotifications;
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Fustat:wght@200..800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Fustat', 'Arial', sans-serif;
+            text-align: center;
+            direction: rtl;
+            background: url('a1.png') no-repeat center center fixed;
+            background-size: cover;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        header {
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 20px 3mm;
+            width: 100%;
+            text-align: center;
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            box-sizing: border-box;
+        }
+
+        header h1, header h2, header h3 {
+            margin: 5px 0;
+            font-size: 18px;
+        }
+
+        #newsTicker {
+            background-color: #ffcc00;
+            color: #000;
+            padding: 10px;
+            width: 100%;
+            max-width: 1400px;
+            font-size: 16px;
+            overflow: hidden;
+            white-space: nowrap;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            margin-top: 10px;
+        }
+
+        #tickerContent {
+            display: inline-block;
+            animation: marquee 60s linear infinite;
+        }
+
+        #tickerContent a {
+            color: #000;
+            text-decoration: none;
+            margin: 0 15px;
+        }
+
+        #tickerContent a:hover {
+            text-decoration: underline;
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        #newsTicker:hover #tickerContent {
+            animation-play-state: paused;
+        }
+
+        .links-container {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 350px;
+            margin: 240px auto 20px;
+        }
+
+        .links-container a {
+            display: block;
+            background-color: #0ea18e;
+            color: white;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .links-container a:hover {
+            background-color: #088e78;
+        }
+
+        .internal-notification {
+            position: absolute;
+            top: 260px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #ffcc00;
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            z-index: 1001;
+            animation: fadeOut 7s forwards;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { opacity: 0; visibility: hidden; }
+        }
+
+        .nav-arrow {
+            position: fixed;
+            top: 165px;
+            z-index: 1000;
+            background-color: #0ea18e;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .nav-arrow:hover {
+            background-color: #088e78;
+        }
+
+        .nav-arrow.right {
+            right: 20px;
+        }
+
+        .nav-arrow.left {
+            left: 20px;
+        }
+
+        .nav-arrow::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            top: -30px;
+            background-color: #333;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .nav-arrow.right::after {
+            right: 0;
+        }
+
+        .nav-arrow.left::after {
+            left: 0;
+        }
+
+        .nav-arrow:hover::after {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            header h1, header h2, header h3 { font-size: 16px; }
+            #newsTicker { font-size: 14px; padding: 8px; }
+            .links-container { margin-top: 230px; padding: 12px; width: 85%; max-width: 320px; }
+            .links-container a { font-size: 14px; padding: 8px; }
+            .internal-notification { top: 250px; }
+            .nav-arrow { top: 165px; font-size: 14px; padding: 8px 12px; }
+            .nav-arrow::after { font-size: 10px; top: -25px; }
+        }
+
+        @media (max-width: 480px) {
+            header { padding: 15px 3mm; }
+            header h1, header h2, header h3 { font-size: 14px; }
+            #newsTicker { font-size: 12px; padding: 6px; }
+            .links-container { margin-top: 220px; padding: 10px; width: 90%; max-width: 280px; }
+            .links-container a { font-size: 12px; padding: 6px; }
+            .internal-notification { top: 240px; padding: 8px 15px; font-size: 12px; }
+            .nav-arrow { top: 165px; font-size: 12px; padding: 6px 10px; }
+            .nav-arrow::after { font-size: 8px; top: -20px; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>الجمـهورية الجزائـرية الديمقـراطية الشعـبية</h1>
+        <h2>وزارة التجارة الداخلية وضبط السوق الوطنية</h2>
+        <h3>المديرية العامة للرقابة الاقتصادية وقمع الغش</h3>
+        <div id="newsTicker">
+            <span id="tickerContent">جارٍ التحميل...</span>
+        </div>
+    </header>
+
+    <a href="directorates.html" class="nav-arrow right" data-tooltip="الانتقال إلى صفحة المديريات">الصفحة التالية →</a>
+    <a href="index.html" class="nav-arrow left" data-tooltip="العودة إلى صفحة تقديم الانشغالات">← الصفحة السابقة</a>
+
+    <div class="links-container">
+        <a href="https://commerce.gov.dz/" target="_blank">وزارة التجارة</a>
+        <a href="https://sidjilcom.mcc.gov.dz/" target="_blank">سجلكم</a>
+        <a href="https://baosem.com/" target="_blank">باوسم</a>
+        <a href="https://www.anc.dz/" target="_blank">ANC</a>
+        <a href="https://www.cnac.dz/" target="_blank">CNAC</a>
+        <a href="https://www.anasr.org/" target="_blank">ANASR</a>
+        <a href="https://www.cnas.dz/" target="_blank">CNAS</a>
+        <a href="https://www.cacqes.dz/" target="_blank">CACQES</a>
+        <a href="https://www.anrp.dz/" target="_blank">ANRP</a>
+        <a href="https://www.angem.dz/" target="_blank">ANGEM</a>
+        <a href="https://www.anade.dz/" target="_blank">ANADE</a>
+    </div>
+</body>
+</html>
