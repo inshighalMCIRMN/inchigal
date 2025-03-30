@@ -6,17 +6,19 @@
     <title>واجهة تقديم الانشغالات</title>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script type="module">
+  
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
         import { getFirestore, collection, onSnapshot, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
         const firebaseConfig = {
-            apiKey: "AIzaSyAB69iadELDvSgbYpP00X2KleBB0vfkSw4",
-            authDomain: "tawassolmcirmn-8d739.firebaseapp.com",
-            projectId: "tawassolmcirmn-8d739",
-            storageBucket: "tawassolmcirmn-8d739.firebasestorage.app",
-            messagingSenderId: "769065313151",
-            appId: "1:769065313151:web:e9c49fdd29b2df5908b04a",
-            measurementId: "G-EJXKY67TK5"
+            apiKey: "AIzaSyAM-op2MBQjm00Nwo-eD0wxf8V1sdG5X8s",
+            authDomain: "inshighalmcirmn-3037f.firebaseapp.com",
+            databaseURL: "https://inshighalmcirmn-3037f-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "inshighalmcirmn-3037f",
+            storageBucket: "inshighalmcirmn-3037f.firebasestorage.app",
+            messagingSenderId: "109645536978",
+            appId: "1:109645536978:web:8d094858df17cee18f970b",
+            measurementId: "G-V9M0MP9N0M"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -99,8 +101,45 @@
             });
         }
 
+        let isLocationEnabled = false;
+        const submitButton = document.getElementById('submitButton');
+
+        // تعطيل الزر افتراضيًا عند تحميل الصفحة
+        window.addEventListener('load', () => {
+            submitButton.disabled = true;
+            submitButton.style.backgroundColor = '#ccc';
+            submitButton.style.cursor = 'not-allowed';
+            checkLocationPermission(); // التحقق من حالة تحديد الموقع عند التحميل
+        });
+
+        // دالة للتحقق من حالة تحديد الموقع
+        function checkLocationPermission() {
+            getCoordinates()
+                .then(() => {
+                    isLocationEnabled = true;
+                    submitButton.disabled = false;
+                    submitButton.style.backgroundColor = '#0ea18e';
+                    submitButton.style.cursor = 'pointer';
+                })
+                .catch(() => {
+                    isLocationEnabled = false;
+                    submitButton.disabled = true;
+                    submitButton.style.backgroundColor = '#ccc';
+                    submitButton.style.cursor = 'not-allowed';
+                });
+        }
+
+        // مراقبة تغيير حالة تحديد الموقع بشكل دوري
+        setInterval(checkLocationPermission, 2000); // التحقق كل ثانيتين
+
         document.getElementById('complaintForm').addEventListener('submit', async function(event) {
             event.preventDefault();
+
+            if (!isLocationEnabled) {
+                showNotification("خطأ", "من فضلك، افتح خاصية تحديد الموقع لضمان وصول انشغالك");
+                return;
+            }
+
             document.getElementById('successMessage').style.display = 'block';
 
             const formData = new FormData(this);
@@ -119,7 +158,7 @@
             try {
                 coordinates = await getCoordinates();
             } catch (error) {
-                coordinates = { latitude: "غير متوفر", longitude: "غير متوفر" };
+                coordinates = { latitude: "غير متوفر", longitude: "غير متوفر" }; // لن يصل إلى هنا لأن الزر معطل إذا لم يكن الموقع مفعلاً
             }
 
             const emailParams = {
@@ -144,6 +183,9 @@
         });
 
         function showNotification(title, message) {
+            const existingNotification = document.querySelector('.internal-notification');
+            if (existingNotification) existingNotification.remove(); // إزالة أي إشعار موجود
+
             const notificationDiv = document.createElement('div');
             notificationDiv.className = 'internal-notification';
             notificationDiv.innerHTML = `<strong>${title}</strong><br>${message}`;
@@ -185,6 +227,7 @@
 
         window.onload = fetchNotifications;
     </script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Fustat:wght@200..800&display=swap" rel="stylesheet">
     <style>
         body {
@@ -235,7 +278,7 @@
 
         #tickerContent {
             display: inline-block;
-            animation: marquee 50s linear infinite;
+            animation: marquee 60s linear infinite;
         }
 
         #tickerContent a {
@@ -306,7 +349,12 @@
             transition: background-color 0.3s;
         }
 
-        button:hover {
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        button:not(:disabled):hover {
             background-color: #088e78;
         }
 
@@ -328,13 +376,13 @@
             top: 260px;
             left: 50%;
             transform: translateX(-50%);
-            background-color: #ffcc00;
-            color: #000;
+            background-color: #ff4444; /* لون أحمر للخطأ */
+            color: #fff;
             padding: 10px 20px;
             border-radius: 5px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
             z-index: 1001;
-            animation: fadeOut 7s forwards;
+            animation: fadeOut 5s forwards;
             max-width: 90%;
             text-align: center;
         }
@@ -372,7 +420,6 @@
 
         .nav-arrow.left {
             left: 20px;
-            display: none;
         }
 
         .nav-arrow::after {
@@ -440,7 +487,7 @@
     </header>
 
     <a href="external-services.html" class="nav-arrow right" data-tooltip="الانتقال إلى صفحة روابط الاتصال">مصالح الوزارة →</a>
-    <a href="#" class="nav-arrow left" data-tooltip="الصفحة السابقة غير متاحة">← الصفحة السابقة</a>
+    <a href="minister-speech.html" class="nav-arrow left" data-tooltip="إطلع على كلمة السيد وزير التجارة الداخلية وضبط السوق الوطنية">← كلمة السيد الوزير</a>
 
     <div class="form-container">
         <form id="complaintForm">
@@ -527,7 +574,7 @@
             <label for="description">وصف الانشغال:</label>
             <textarea id="description" name="description" placeholder="اكتب تفاصيل انشغالك هنا" rows="4" required></textarea>
 
-            <button type="submit">إرسال الانشغال</button>
+            <button type="submit" id="submitButton">إرسال الانشغال</button>
         </form>
     </div>
 
